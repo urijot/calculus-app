@@ -196,7 +196,7 @@ elif menu == "勾配と等高線":
     Z = np.sin(X) + np.cos(Y)
 
     # 描画ロジックを関数化（アニメーションで再利用するため）
-    def draw_plots(curr_x, curr_y):
+    def draw_plots(curr_x, curr_y, calc_log=None):
         # 現在地点と勾配の計算
         curr_z = np.sin(curr_x) + np.cos(curr_y)
         g_x = np.cos(curr_x)
@@ -233,21 +233,46 @@ elif menu == "勾配と等高線":
         
         st.info(f"現在地: $({curr_x:.3f}, {curr_y:.3f})$  勾配: $({g_x:.3f}, {g_y:.3f})$")
 
+        if calc_log:
+            st.markdown("##### 勾配降下法の計算過程")
+            ox, oy = calc_log["old_x"], calc_log["old_y"]
+            gx, gy = calc_log["grad_x"], calc_log["grad_y"]
+            eta = calc_log["lr"]
+            
+            st.latex(rf"""
+            \begin{{aligned}}
+            x_{{new}} &= {ox:.3f} - {eta} \cdot ({gx:.3f}) = {curr_x:.3f} \\
+            y_{{new}} &= {oy:.3f} - {eta} \cdot ({gy:.3f}) = {curr_y:.3f}
+            \end{{aligned}}
+            """)
+
     # アニメーション表示用のプレースホルダー
     plot_placeholder = st.empty()
 
     if run_anim:
         curr_x, curr_y = cx, cy
         for _ in range(30):  # 30ステップ実行
-            # 勾配降下法の更新式: x_new = x - lr * grad
-            g_x = np.cos(curr_x)
-            g_y = -np.sin(curr_y)
-            curr_x -= lr * g_x
-            curr_y -= lr * g_y
+            # 更新前の値を保持
+            old_x, old_y = curr_x, curr_y
+            
+            # 勾配の計算 (更新前)
+            g_x_old = np.cos(old_x)
+            g_y_old = -np.sin(old_y)
+            
+            # 更新
+            curr_x -= lr * g_x_old
+            curr_y -= lr * g_y_old
+            
+            # 計算ログ
+            calc_log = {
+                "old_x": old_x, "old_y": old_y,
+                "grad_x": g_x_old, "grad_y": g_y_old,
+                "lr": lr
+            }
             
             with plot_placeholder.container():
-                draw_plots(curr_x, curr_y)
-            time.sleep(0.1)
+                draw_plots(curr_x, curr_y, calc_log)
+            time.sleep(0.3) # 計算が見えるように少しゆっくりに
     else:
         with plot_placeholder.container():
             draw_plots(cx, cy)
