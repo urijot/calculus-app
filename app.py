@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # サイドバーで「どの機能を使うか」を選べるようにする
 st.sidebar.title("解析学メニュー")
-menu = st.sidebar.selectbox("学習テーマを選択", ["テイラー展開", "ε-δ 論法", "重積分", "勾配と等高線"])
+menu = st.sidebar.selectbox("学習テーマを選択", ["テイラー展開", "ε-δ 論法", "重積分", "勾配と等高線", "線積分"])
 
 # ---------------------------------------------------------
 # 1. テイラー展開の画面
@@ -280,4 +280,105 @@ elif menu == "勾配と等高線":
     # 数式と値の表示
     st.latex(r"\nabla f = \left( \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y} \right) = (\cos x, -\sin y)")
 
+# ---------------------------------------------------------
+# 5. 線積分の画面
+# ---------------------------------------------------------
+elif menu == "線積分":
+    st.title("解析学：線積分の視覚化")
+    st.markdown(r"ベクトル場 $\mathbf{F}(x, y) = (-y, x)$ における線積分 $\int_C \mathbf{F} \cdot d\mathbf{r}$")
+
+    # 経路の設定
+    path_type = st.sidebar.radio("経路の形状", ["円周 (原点中心)", "円周 (中心シフト)"])
+    theta_max = st.sidebar.slider("終点の角度 (rad)", 0.1, 2 * np.pi, np.pi)
+
+    # ベクトル場の準備
+    x_range = np.linspace(-3, 3, 20)
+    y_range = np.linspace(-3, 3, 20)
+    X, Y = np.meshgrid(x_range, y_range)
+    U = -Y
+    V = X
+
+    # 描画
+    fig, ax = plt.subplots(figsize=(6, 6))
+    
+    # 背景のベクトル場
+    ax.quiver(X, Y, U, V, color='gray', alpha=0.3, label=r'$\mathbf{F}=(-y, x)$')
+
+    # 経路の計算
+    t = np.linspace(0, theta_max, 100)
+    
+    if path_type == "円周 (原点中心)":
+        rx = np.cos(t)
+        ry = np.sin(t)
+    else:
+        # 中心 (1.5, 0), 半径 1
+        rx = 1.5 + np.cos(t)
+        ry = np.sin(t)
+
+    # 線積分の計算
+    # 1. 経路上のベクトル場 F(r(t))
+    Fx = -ry
+    Fy = rx
+    
+    # 2. 接ベクトル r'(t) (数値微分)
+    drx = np.gradient(rx, t)
+    dry = np.gradient(ry, t)
+    
+    # 3. 仕事率 (Power) = F . v
+    power = Fx * drx + Fy * dry
+    
+    # 4. 線積分 (仕事) = int (power) dt
+    work = np.trapz(power, t)
+    
+    # 5. 可視化用の内積値 (F . T)
+    speed = np.sqrt(drx**2 + dry**2)
+    speed[speed == 0] = 1.0 # ゼロ除算回避
+    f_dot_t = power / speed
+
+    # 経路の描画 (色で内積の正負を表示: 赤=正, 青=負)
+    sc = ax.scatter(rx, ry, c=f_dot_t, cmap='coolwarm', s=30, vmin=-2, vmax=2, label='Path')
+    fig.colorbar(sc, ax=ax, label=r"$\mathbf{F} \cdot \mathbf{T}$ (内積)")
+    
+    # 始点と終点
+    ax.plot(rx[0], ry[0], 'go', markersize=8, label='Start')
+    ax.plot(rx[-1], ry[-1], 'ro', markersize=8, label='End')
+
+    ax.set_xlim(-3, 3)
+    ax.set_ylim(-3, 3)
+    ax.set_aspect('equal')
+    ax.legend(loc='upper right')
+    ax.set_title(f"Line Integral: {work:.4f}")
+    
+    st.pyplot(fig)
+    
+    # 理論値の計算と過程の表示
+    if path_type == "円周 (原点中心)":
+        theory_work = theta_max
+        latex_steps = rf"""
+        \begin{{aligned}}
+        \mathbf{{r}}(t) &= (\cos t, \sin t) \\
+        \mathbf{{F}} \cdot \mathbf{{r}}'(t) &= (-\sin t)(-\sin t) + (\cos t)(\cos t) = 1 \\
+        W &= \int_0^{{{theta_max:.2f}}} 1 \, dt = [t]_0^{{{theta_max:.2f}}} = {theory_work:.4f}
+        \end{{aligned}}
+        """
+    else:
+        theory_work = theta_max + 1.5 * np.sin(theta_max)
+        latex_steps = rf"""
+        \begin{{aligned}}
+        \mathbf{{r}}(t) &= (1.5 + \cos t, \sin t) \\
+        \mathbf{{F}} \cdot \mathbf{{r}}'(t) &= 1 + 1.5\cos t \\
+        W &= \int_0^{{{theta_max:.2f}}} (1 + 1.5\cos t) \, dt = [t + 1.5\sin t]_0^{{{theta_max:.2f}}} \\
+          &= {theta_max:.4f} + 1.5({np.sin(theta_max):.4f}) = {theory_work:.4f}
+        \end{{aligned}}
+        """
+
+    st.subheader("計算結果と過程")
+    with st.expander("計算過程の詳細を表示", expanded=True):
+        st.latex(latex_steps)
+
+    col1, col2 = st.columns(2)
+    col1.metric("理論値", f"{theory_work:.4f}")
+    col2.metric("数値積分", f"{work:.4f}", delta=f"{work - theory_work:.4f}")
+
+    st.info("赤色は「追い風（仕事が正）」、青色は「向かい風（仕事が負）」を表しています。")
     
