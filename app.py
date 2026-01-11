@@ -1,4 +1,5 @@
 import streamlit as st
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import factorial
@@ -184,6 +185,9 @@ elif menu == "勾配と等高線":
     col_param1, col_param2 = st.columns(2)
     cx = col_param1.slider("x 座標", -3.0, 3.0, 0.0, 0.1)
     cy = col_param2.slider("y 座標", -3.0, 3.0, 0.0, 0.1)
+    
+    lr = st.sidebar.slider("学習率 (η)", 0.01, 0.5, 0.1, 0.01)
+    run_anim = st.button("勾配降下法を開始 (アニメーション)")
 
     # データ準備
     x = np.linspace(-3.5, 3.5, 100)
@@ -191,42 +195,64 @@ elif menu == "勾配と等高線":
     X, Y = np.meshgrid(x, y)
     Z = np.sin(X) + np.cos(Y)
 
-    # 現在地点と勾配の計算
-    cz = np.sin(cx) + np.cos(cy)
-    grad_x = np.cos(cx)      # df/dx = cos(x)
-    grad_y = -np.sin(cy)     # df/dy = -sin(y)
+    # 描画ロジックを関数化（アニメーションで再利用するため）
+    def draw_plots(curr_x, curr_y):
+        # 現在地点と勾配の計算
+        curr_z = np.sin(curr_x) + np.cos(curr_y)
+        g_x = np.cos(curr_x)
+        g_y = -np.sin(curr_y)
 
-    # 描画エリアの分割
-    col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
-    # 左：3D曲面グラフ
-    with col1:
-        st.subheader("3D 曲面")
-        fig1 = plt.figure(figsize=(6, 6))
-        ax1 = fig1.add_subplot(111, projection='3d')
-        ax1.plot_surface(X, Y, Z, cmap='viridis', alpha=0.6)
-        ax1.scatter(cx, cy, cz, color='red', s=100, label='Current Point')
-        ax1.set_title(f"z = {cz:.2f} at ({cx:.2f}, {cy:.2f})")
-        st.pyplot(fig1)
+        # 左：3D曲面グラフ
+        with col1:
+            st.subheader("3D 曲面")
+            fig1 = plt.figure(figsize=(6, 6))
+            ax1 = fig1.add_subplot(111, projection='3d')
+            ax1.plot_surface(X, Y, Z, cmap='viridis', alpha=0.6)
+            ax1.scatter(curr_x, curr_y, curr_z, color='red', s=100, label='Current Point')
+            ax1.set_title(f"z = {curr_z:.2f}")
+            st.pyplot(fig1)
+            plt.close(fig1)
 
-    # 右：等高線図と勾配ベクトル
-    with col2:
-        st.subheader("等高線と勾配ベクトル")
-        fig2, ax2 = plt.subplots(figsize=(6, 6))
-        contour = ax2.contourf(X, Y, Z, levels=20, cmap='viridis', alpha=0.6)
-        fig2.colorbar(contour, ax=ax2)
+        # 右：等高線図と勾配ベクトル
+        with col2:
+            st.subheader("等高線と勾配ベクトル")
+            fig2, ax2 = plt.subplots(figsize=(6, 6))
+            contour = ax2.contourf(X, Y, Z, levels=20, cmap='viridis', alpha=0.6)
+            fig2.colorbar(contour, ax=ax2)
+            
+            ax2.quiver(curr_x, curr_y, g_x, g_y, color='red', scale=5, width=0.02, label=r'$\nabla f$')
+            ax2.plot(curr_x, curr_y, 'ro', markersize=8)
+            
+            ax2.set_title(f"Gradient: ({g_x:.2f}, {g_y:.2f})")
+            ax2.set_aspect('equal')
+            ax2.legend()
+            st.pyplot(fig2)
+            plt.close(fig2)
         
-        # 現在地点の勾配ベクトルを描画 (scaleパラメータで矢印の長さを調整)
-        ax2.quiver(cx, cy, grad_x, grad_y, color='red', scale=5, width=0.02, label=r'$\nabla f$')
-        ax2.plot(cx, cy, 'ro', markersize=8)
-        
-        ax2.set_title(f"Gradient: ({grad_x:.2f}, {grad_y:.2f})")
-        ax2.set_aspect('equal')
-        ax2.legend()
-        st.pyplot(fig2)
+        st.info(f"現在地: $({curr_x:.3f}, {curr_y:.3f})$  勾配: $({g_x:.3f}, {g_y:.3f})$")
+
+    # アニメーション表示用のプレースホルダー
+    plot_placeholder = st.empty()
+
+    if run_anim:
+        curr_x, curr_y = cx, cy
+        for _ in range(30):  # 30ステップ実行
+            # 勾配降下法の更新式: x_new = x - lr * grad
+            g_x = np.cos(curr_x)
+            g_y = -np.sin(curr_y)
+            curr_x -= lr * g_x
+            curr_y -= lr * g_y
+            
+            with plot_placeholder.container():
+                draw_plots(curr_x, curr_y)
+            time.sleep(0.1)
+    else:
+        with plot_placeholder.container():
+            draw_plots(cx, cy)
 
     # 数式と値の表示
     st.latex(r"\nabla f = \left( \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y} \right) = (\cos x, -\sin y)")
-    st.info(f"現在の勾配ベクトル: $({grad_x:.4f}, {grad_y:.4f})$")
 
     
