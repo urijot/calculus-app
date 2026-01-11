@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # サイドバーで「どの機能を使うか」を選べるようにする
 st.sidebar.title("解析学メニュー")
-menu = st.sidebar.selectbox("学習テーマを選択", ["テイラー展開", "ε-δ 論法", "重積分"])
+menu = st.sidebar.selectbox("学習テーマを選択", ["テイラー展開", "ε-δ 論法", "重積分", "勾配と等高線"])
 
 # ---------------------------------------------------------
 # 1. テイラー展開の画面
@@ -172,5 +172,61 @@ elif menu == "重積分":
     ax.set_title(f"Riemann Sum (n={n})")
     ax.set_zlim(0, 3)
     st.pyplot(fig)
+
+# ---------------------------------------------------------
+# 4. 勾配（グラディエント）と等高線の画面
+# ---------------------------------------------------------
+elif menu == "勾配と等高線":
+    st.title("解析学：勾配と等高線の視覚化")
+    st.markdown(r"関数 $f(x, y) = \sin(x) + \cos(y)$ の勾配 $\nabla f$ を視覚化します。")
+
+    # 操作用スライダー
+    col_param1, col_param2 = st.columns(2)
+    cx = col_param1.slider("x 座標", -3.0, 3.0, 0.0, 0.1)
+    cy = col_param2.slider("y 座標", -3.0, 3.0, 0.0, 0.1)
+
+    # データ準備
+    x = np.linspace(-3.5, 3.5, 100)
+    y = np.linspace(-3.5, 3.5, 100)
+    X, Y = np.meshgrid(x, y)
+    Z = np.sin(X) + np.cos(Y)
+
+    # 現在地点と勾配の計算
+    cz = np.sin(cx) + np.cos(cy)
+    grad_x = np.cos(cx)      # df/dx = cos(x)
+    grad_y = -np.sin(cy)     # df/dy = -sin(y)
+
+    # 描画エリアの分割
+    col1, col2 = st.columns(2)
+
+    # 左：3D曲面グラフ
+    with col1:
+        st.subheader("3D 曲面")
+        fig1 = plt.figure(figsize=(6, 6))
+        ax1 = fig1.add_subplot(111, projection='3d')
+        ax1.plot_surface(X, Y, Z, cmap='viridis', alpha=0.6)
+        ax1.scatter(cx, cy, cz, color='red', s=100, label='Current Point')
+        ax1.set_title(f"z = {cz:.2f} at ({cx:.2f}, {cy:.2f})")
+        st.pyplot(fig1)
+
+    # 右：等高線図と勾配ベクトル
+    with col2:
+        st.subheader("等高線と勾配ベクトル")
+        fig2, ax2 = plt.subplots(figsize=(6, 6))
+        contour = ax2.contourf(X, Y, Z, levels=20, cmap='viridis', alpha=0.6)
+        fig2.colorbar(contour, ax=ax2)
+        
+        # 現在地点の勾配ベクトルを描画 (scaleパラメータで矢印の長さを調整)
+        ax2.quiver(cx, cy, grad_x, grad_y, color='red', scale=5, width=0.02, label=r'$\nabla f$')
+        ax2.plot(cx, cy, 'ro', markersize=8)
+        
+        ax2.set_title(f"Gradient: ({grad_x:.2f}, {grad_y:.2f})")
+        ax2.set_aspect('equal')
+        ax2.legend()
+        st.pyplot(fig2)
+
+    # 数式と値の表示
+    st.latex(r"\nabla f = \left( \frac{\partial f}{\partial x}, \frac{\partial f}{\partial y} \right) = (\cos x, -\sin y)")
+    st.info(f"現在の勾配ベクトル: $({grad_x:.4f}, {grad_y:.4f})$")
 
     
