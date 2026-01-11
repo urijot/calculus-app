@@ -51,3 +51,44 @@ ax.legend()
 ax.grid(True)
 
 st.pyplot(fig)
+
+st.title("解析学：ε-δ 論法の視覚化")
+st.write(r"目標: $\lim_{x \to a} f(x) = L$ の定義を理解する")
+
+# 1. パラメータ設定
+a = 2.0  # 極限点
+L = 4.0  # 極限値
+epsilon = st.slider("ε (縦の許容誤差) を決めてください", 0.1, 2.0, 1.0, step=0.1)
+
+# f(x) = x^2 において、|x^2 - 4| < eps を満たす delta を計算
+# 本来は論理的に探すべきですが、視覚化のために最大の delta を逆算します
+delta = np.sqrt(L + epsilon) - a
+
+# 2. グラフ描画用のデータ
+x = np.linspace(0, 4, 400)
+y = x**2
+
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(x, y, color="black", label="f(x) = x^2")
+
+# ε の範囲（縦軸の帯）
+ax.axhspan(L - epsilon, L + epsilon, color="yellow", alpha=0.3, label="ε-band (|f(x) - L| < ε)")
+ax.axhline(L, color="red", linestyle="--", alpha=0.5)
+
+# δ の範囲（横軸の帯）
+ax.axvspan(a - delta, a + delta, color="blue", alpha=0.2, label="δ-band (|x - a| < δ)")
+ax.axvline(a, color="blue", linestyle="--", alpha=0.5)
+
+# 点 (a, L)
+ax.plot(a, L, 'ro')
+
+ax.set_xlim(0, 4)
+ax.set_ylim(0, 8)
+ax.set_xlabel("x")
+ax.set_ylabel("f(x)")
+ax.legend()
+ax.grid(True, alpha=0.3)
+
+st.pyplot(fig)
+
+st.info(f"ε = {epsilon:.2f} のとき、δ = {delta:.2f} とすれば、青い範囲の x はすべて黄色の範囲に収まります。")
