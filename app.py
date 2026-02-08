@@ -6,17 +6,17 @@ from scipy.special import factorial
 from mpl_toolkits.mplot3d import Axes3D
 
 # サイドバーで「どの機能を使うか」を選べるようにする
-st.sidebar.title("解析学メニュー")
-menu = st.sidebar.selectbox("学習テーマを選択", ["テイラー展開", "ε-δ 論法", "重積分", "勾配と等高線", "線積分"])
+st.sidebar.title("Calculus Menu")
+menu = st.sidebar.selectbox("Select Topic", ["Taylor Series", "Epsilon-Delta", "Double Integral", "Gradient & Contour", "Line Integral"])
 
 # ---------------------------------------------------------
 # 1. テイラー展開の画面
 # ---------------------------------------------------------
-if menu == "テイラー展開":
-    st.title("解析学：テイラー展開の視覚化")
+if menu == "Taylor Series":
+    st.title("Calculus: Taylor Series Visualization")
     
-    target_func = st.sidebar.selectbox("関数を選択", ["sin(x)", "cos(x)", "exp(x)"])
-    n = st.sidebar.slider("近似の次数 (n)", 0, 15, 1)
+    target_func = st.sidebar.selectbox("Select Function", ["sin(x)", "cos(x)", "exp(x)"])
+    n = st.sidebar.slider("Approximation Degree (n)", 0, 15, 1)
 
     def get_data(x, n, func_type):
         y = np.zeros_like(x)
@@ -47,25 +47,25 @@ if menu == "テイラー展開":
 # ---------------------------------------------------------
 # 2. ε-δ 論法の画面
 # ---------------------------------------------------------
-elif menu == "ε-δ 論法":
-    st.title("解析学：ε-δ 論法の視覚化")
+elif menu == "Epsilon-Delta":
+    st.title("Calculus: Epsilon-Delta Visualization")
     
-    mode = st.sidebar.radio("関数を選択", ["連続 (x^2)", "不連続 (Step)"])
-    epsilon = st.sidebar.slider("ε (縦の許容誤差)", 0.05, 1.5, 0.5)
+    mode = st.sidebar.radio("Select Function", ["Continuous (x^2)", "Discontinuous (Step)"])
+    epsilon = st.sidebar.slider("ε (Vertical Tolerance)", 0.05, 1.5, 0.5)
 
     a = 1.0 
     x = np.linspace(0, 2, 400)
 
-    if mode == "連続 (x^2)":
+    if mode == "Continuous (x^2)":
         L = a**2
         y = x**2
         delta = np.sqrt(L + epsilon) - a
-        st.success(f"連続：ε={epsilon} に対して δ={delta:.3f} が見つかります。")
+        st.success(f"Continuous: For ε={epsilon}, we find δ={delta:.3f}.")
     else:
         L = 1.0
         y = np.where(x < a, x, x + 1)
         delta = 0.2 
-        st.error("不連続：ε を小さくすると、グラフが帯から飛び出します！")
+        st.error("Discontinuous: If ε is small, the graph jumps out of the band!")
 
     fig, ax = plt.subplots()
     ax.plot(x, y, 'ko', markersize=1)
@@ -77,17 +77,17 @@ elif menu == "ε-δ 論法":
 # ---------------------------------------------------------
 # 3. 重積分とリーマン和の画面
 # ---------------------------------------------------------
-elif menu == "重積分":
-    st.title("解析学：重積分とリーマン和の視覚化")
+elif menu == "Double Integral":
+    st.title("Calculus: Double Integral & Riemann Sum Visualization")
 
     # 領域の選択
     col_x, col_y = st.columns(2)
-    x_min, x_max = col_x.slider("x の範囲", -3.0, 3.0, (-1.0, 1.0))
-    y_min, y_max = col_y.slider("y の範囲", -3.0, 3.0, (-1.0, 1.0))
+    x_min, x_max = col_x.slider("x Range", -3.0, 3.0, (-1.0, 1.0))
+    y_min, y_max = col_y.slider("y Range", -3.0, 3.0, (-1.0, 1.0))
 
-    st.markdown(f"関数 $z = f(x, y) = x^2 + y^2$ の体積近似（領域 $[{x_min}, {x_max}] \\times [{y_min}, {y_max}]$）")
+    st.markdown(f"Volume approximation of $z = f(x, y) = x^2 + y^2$ (Region $[{x_min}, {x_max}] \\times [{y_min}, {y_max}]$)")
 
-    n = st.sidebar.slider("分割数 (n)", 2, 20, 5)
+    n = st.sidebar.slider("Partitions (n)", 2, 20, 5)
 
     # 3Dプロットの準備
     fig = plt.figure(figsize=(8, 6))
@@ -129,10 +129,10 @@ elif menu == "重積分":
     # リーマン和の高さの合計（表示用）
     sum_heights = np.sum(dz_flat)
 
-    st.subheader("計算結果と過程")
+    st.subheader("Calculation Results & Process")
 
-    with st.expander("計算過程の詳細を表示", expanded=True):
-        st.markdown("**1. 理論値（二重積分）の計算**")
+    with st.expander("Show Calculation Details", expanded=True):
+        st.markdown("**1. Theoretical Value (Double Integral)**")
         
         # f-stringの複雑なネストを避けるために変数を定義
         t1_str = f"{term1:.4f}"
@@ -143,12 +143,12 @@ elif menu == "重積分":
             \begin{{aligned}}
             V &= \int_{{{y_min}}}^{{{y_max}}} \int_{{{x_min}}}^{{{x_max}}} (x^2 + y^2) \, dx \, dy \\
               &= \left[ \frac{{x^3}}{{3}}y + x\frac{{y^3}}{{3}} \right]_{{ {x_min}, {y_min} }}^{{ {x_max}, {y_max} }} \\
-              &= \underbrace{{ {t1_str} }}_{{\text{{xの寄与}}}} + \underbrace{{ {t2_str} }}_{{\text{{yの寄与}}}} \\
+              &= \underbrace{{ {t1_str} }}_{{\text{{Contribution of x}}}} + \underbrace{{ {t2_str} }}_{{\text{{Contribution of y}}}} \\
               &= {ve_str}
             \end{{aligned}}
         """)
         
-        st.markdown(f"**2. リーマン和（$n={n}$）の計算**")
+        st.markdown(f"**2. Riemann Sum ($n={n}$)**")
         
         dx_str = f"{dx:.4f}"
         dy_str = f"{dy:.4f}"
@@ -159,14 +159,14 @@ elif menu == "重積分":
             \begin{{aligned}}
             \Delta x &= {dx_str}, \quad \Delta y = {dy_str} \\
             S_n &\approx \Delta x \Delta y \sum_{{i,j}} (x_i^2 + y_j^2) \\
-            &= {dx_str} \times {dy_str} \times \underbrace{{ {sh_str} }}_{{\text{{高さの総和}}}} \\
+            &= {dx_str} \times {dy_str} \times \underbrace{{ {sh_str} }}_{{\text{{Sum of Heights}}}} \\
             &= {va_str}
             \end{{aligned}}
         """)
 
     col1, col2 = st.columns(2)
-    col1.metric("理論値 (積分)", f"{volume_exact:.4f}")
-    col2.metric(f"リーマン和 (n={n})", f"{volume_approx:.4f}", delta=f"{volume_approx - volume_exact:.4f}")
+    col1.metric("Theoretical (Integral)", f"{volume_exact:.4f}")
+    col2.metric(f"Riemann Sum (n={n})", f"{volume_approx:.4f}", delta=f"{volume_approx - volume_exact:.4f}")
 
     ax.bar3d(x_flat, y_flat, z_flat, dx_flat, dy_flat, dz_flat, shade=True, color='skyblue', edgecolor='black', alpha=0.6)
     
@@ -177,17 +177,17 @@ elif menu == "重積分":
 # ---------------------------------------------------------
 # 4. 勾配（グラディエント）と等高線の画面
 # ---------------------------------------------------------
-elif menu == "勾配と等高線":
-    st.title("解析学：勾配と等高線の視覚化")
-    st.markdown(r"関数 $f(x, y) = \sin(x) + \cos(y)$ の勾配 $\nabla f$ を視覚化します。")
+elif menu == "Gradient & Contour":
+    st.title("Calculus: Gradient & Contour Visualization")
+    st.markdown(r"Visualizing gradient $\nabla f$ of $f(x, y) = \sin(x) + \cos(y)$.")
 
     # 操作用スライダー
     col_param1, col_param2 = st.columns(2)
-    cx = col_param1.slider("x 座標", -3.0, 3.0, 0.0, 0.1)
-    cy = col_param2.slider("y 座標", -3.0, 3.0, 0.0, 0.1)
+    cx = col_param1.slider("x Coordinate", -3.0, 3.0, 0.0, 0.1)
+    cy = col_param2.slider("y Coordinate", -3.0, 3.0, 0.0, 0.1)
     
-    lr = st.sidebar.slider("学習率 (η)", 0.01, 0.5, 0.1, 0.01)
-    run_anim = st.button("勾配降下法を開始 (アニメーション)")
+    lr = st.sidebar.slider("Learning Rate (η)", 0.01, 0.5, 0.1, 0.01)
+    run_anim = st.button("Start Gradient Descent (Animation)")
 
     # データ準備
     x = np.linspace(-3.5, 3.5, 100)
@@ -206,7 +206,7 @@ elif menu == "勾配と等高線":
 
         # 左：3D曲面グラフ
         with col1:
-            st.subheader("3D 曲面")
+            st.subheader("3D Surface")
             fig1 = plt.figure(figsize=(6, 6))
             ax1 = fig1.add_subplot(111, projection='3d')
             ax1.plot_surface(X, Y, Z, cmap='viridis', alpha=0.6)
@@ -217,7 +217,7 @@ elif menu == "勾配と等高線":
 
         # 右：等高線図と勾配ベクトル
         with col2:
-            st.subheader("等高線と勾配ベクトル")
+            st.subheader("Contour & Gradient Vector")
             fig2, ax2 = plt.subplots(figsize=(6, 6))
             contour = ax2.contourf(X, Y, Z, levels=20, cmap='viridis', alpha=0.6)
             fig2.colorbar(contour, ax=ax2)
@@ -231,10 +231,10 @@ elif menu == "勾配と等高線":
             st.pyplot(fig2)
             plt.close(fig2)
         
-        st.info(f"現在地: $({curr_x:.3f}, {curr_y:.3f})$  勾配: $({g_x:.3f}, {g_y:.3f})$")
+        st.info(f"Current Pos: $({curr_x:.3f}, {curr_y:.3f})$  Gradient: $({g_x:.3f}, {g_y:.3f})$")
 
         if calc_log:
-            st.markdown("##### 勾配降下法の計算過程")
+            st.markdown("##### Gradient Descent Process")
             ox, oy = calc_log["old_x"], calc_log["old_y"]
             gx, gy = calc_log["grad_x"], calc_log["grad_y"]
             eta = calc_log["lr"]
@@ -283,13 +283,13 @@ elif menu == "勾配と等高線":
 # ---------------------------------------------------------
 # 5. 線積分の画面
 # ---------------------------------------------------------
-elif menu == "線積分":
-    st.title("解析学：線積分の視覚化")
-    st.markdown(r"ベクトル場 $\mathbf{F}(x, y) = (-y, x)$ における線積分 $\int_C \mathbf{F} \cdot d\mathbf{r}$")
+elif menu == "Line Integral":
+    st.title("Calculus: Line Integral Visualization")
+    st.markdown(r"Line integral $\int_C \mathbf{F} \cdot d\mathbf{r}$ in vector field $\mathbf{F}(x, y) = (-y, x)$")
 
     # 経路の設定
-    path_type = st.sidebar.radio("経路の形状", ["円周 (原点中心)", "円周 (中心シフト)"])
-    theta_max = st.sidebar.slider("終点の角度 (rad)", 0.1, 2 * np.pi, np.pi)
+    path_type = st.sidebar.radio("Path Shape", ["Circle (Centered at Origin)", "Circle (Shifted Center)"])
+    theta_max = st.sidebar.slider("End Angle (rad)", 0.1, 2 * np.pi, np.pi)
 
     # ベクトル場の準備
     x_range = np.linspace(-3, 3, 20)
@@ -307,7 +307,7 @@ elif menu == "線積分":
     # 経路の計算
     t = np.linspace(0, theta_max, 100)
     
-    if path_type == "円周 (原点中心)":
+    if path_type == "Circle (Centered at Origin)":
         rx = np.cos(t)
         ry = np.sin(t)
     else:
@@ -337,7 +337,7 @@ elif menu == "線積分":
 
     # 経路の描画 (色で内積の正負を表示: 赤=正, 青=負)
     sc = ax.scatter(rx, ry, c=f_dot_t, cmap='coolwarm', s=30, vmin=-2, vmax=2, label='Path')
-    fig.colorbar(sc, ax=ax, label=r"$\mathbf{F} \cdot \mathbf{T}$ (内積)")
+    fig.colorbar(sc, ax=ax, label=r"$\mathbf{F} \cdot \mathbf{T}$ (Dot Product)")
     
     # 始点と終点
     ax.plot(rx[0], ry[0], 'go', markersize=8, label='Start')
@@ -352,7 +352,7 @@ elif menu == "線積分":
     st.pyplot(fig)
     
     # 理論値の計算と過程の表示
-    if path_type == "円周 (原点中心)":
+    if path_type == "Circle (Centered at Origin)":
         theory_work = theta_max
         latex_steps = rf"""
         \begin{{aligned}}
@@ -372,13 +372,13 @@ elif menu == "線積分":
         \end{{aligned}}
         """
 
-    st.subheader("計算結果と過程")
-    with st.expander("計算過程の詳細を表示", expanded=True):
+    st.subheader("Calculation Results & Process")
+    with st.expander("Show Calculation Details", expanded=True):
         st.latex(latex_steps)
 
     col1, col2 = st.columns(2)
-    col1.metric("理論値", f"{theory_work:.4f}")
-    col2.metric("数値積分", f"{work:.4f}", delta=f"{work - theory_work:.4f}")
+    col1.metric("Theoretical Value", f"{theory_work:.4f}")
+    col2.metric("Numerical Integral", f"{work:.4f}", delta=f"{work - theory_work:.4f}")
 
-    st.info("赤色は「追い風（仕事が正）」、青色は「向かい風（仕事が負）」を表しています。")
+    st.info("Red indicates 'Tailwind (Positive Work)', Blue indicates 'Headwind (Negative Work)'.")
     
