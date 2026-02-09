@@ -1,7 +1,7 @@
 # Calculus Visualization App 📐
 An interactive tool for STEM students to visually understand challenging concepts in Calculus and Analysis.
 
-**[🚀 Live Demo](https://calculus-app-chnyhjrstvqsp2euxgd4jy.streamlit.app/)**
+**🚀 Live Demo:** https://calculus-app-chnyhjrstvqsp2euxgd4jy.streamlit.app/
 
 ## ✨ Core Features
 
