@@ -5,7 +5,7 @@
 
 ## 💡 Motivation
 
-I created this project to learn the Calculus concepts essential for Computer Science. Coming from a non-STEM background, I found that visualizing these mathematical ideas made them much easier to grasp.
+Coming from a non-STEM background, I built this project as a means to teach myself Calculus. I found that visualizing abstract equations was key to grasping complex topics like Taylor series and line integrals. I created this interactive tool to solidify my own understanding and to help other students and developers build a geometric intuition, bridging the gap between theory and visualization.
 
 ## ✨ Core Features
 
