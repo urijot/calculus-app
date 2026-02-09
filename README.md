@@ -3,6 +3,10 @@ An interactive tool for STEM students to visually understand challenging concept
 
 **🚀 Live Demo:** https://calculus-app-chnyhjrstvqsp2euxgd4jy.streamlit.app/
 
+## 💡 Motivation
+
+I created this project to learn the Calculus concepts essential for Computer Science. Coming from a non-STEM background, I found that visualizing these mathematical ideas made them much easier to grasp.
+
 ## ✨ Core Features
 
 This app visualizes abstract mathematical definitions dynamically.
