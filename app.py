@@ -328,7 +328,8 @@ elif menu == "Line Integral":
     power = Fx * drx + Fy * dry
     
     # 4. 線積分 (仕事) = int (power) dt
-    work = np.trapz(power, t)
+    # NumPy 2.0以降の互換性対応: np.trapz は削除されたため np.trapezoid を使用
+    work = (np.trapezoid if hasattr(np, "trapezoid") else np.trapz)(power, t)
     
     # 5. 可視化用の内積値 (F . T)
     speed = np.sqrt(drx**2 + dry**2)
