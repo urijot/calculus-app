@@ -285,10 +285,27 @@ elif menu == "Gradient & Contour":
 # ---------------------------------------------------------
 elif menu == "Line Integral":
     st.title("Calculus: Line Integral Visualization")
-    st.markdown(r"Line integral $\int_C \mathbf{F} \cdot d\mathbf{r}$ in vector field $\mathbf{F}(x, y) = (-y, x)$")
+    
+    # 1. Introduction Section
+    st.markdown("""
+    ### Concept: Work in a Vector Field
+    Imagine walking along a path $C$ in a windy field represented by vectors $\mathbf{F}$.
+    The **Line Integral** $\int_C \mathbf{F} \cdot d\mathbf{r}$ calculates the total **Work** done by the field on you.
+    
+    *   **Tailwind**: The field pushes you forward (Positive Work).
+    *   **Headwind**: The field pushes against you (Negative Work).
+    """)
+    st.markdown(r"**Vector Field:** $\mathbf{F}(x, y) = (-y, x)$ (Counter-clockwise rotation)")
 
     # Path Settings
     path_type = st.sidebar.radio("Path Shape", ["Circle (Centered at Origin)", "Circle (Shifted Center)"])
+    
+    # 2. Path Selection Description
+    if path_type == "Circle (Centered at Origin)":
+        st.sidebar.caption("Path aligns with the flow (Constant Tailwind).")
+    else:
+        st.sidebar.caption("Path is shifted (Varying alignment with flow).")
+
     theta_max = st.sidebar.slider("End Angle (rad)", 0.1, 2 * np.pi, np.pi)
 
     # Prepare Vector Field
@@ -381,5 +398,17 @@ elif menu == "Line Integral":
     col1.metric("Theoretical Value", f"{theory_work:.4f}")
     col2.metric("Numerical Integral", f"{work:.4f}", delta=f"{work - theory_work:.4f}")
 
-    st.info("Red indicates 'Tailwind (Positive Work)', Blue indicates 'Headwind (Negative Work)'.")
+    # 3. Interpretation
+    st.markdown("### Interpretation")
+    if path_type == "Circle (Centered at Origin)":
+        st.success("The path follows the vector field's rotation perfectly. The force is always tangent to the path (Red), resulting in maximum positive work.")
+    else:
+        st.warning("The path is shifted. Notice how the alignment with the vector field changes. The work is the net sum of these varying interactions.")
+
+    # 5. Final Info Message
+    st.info("""
+    **Visual Guide (Dot Product $\mathbf{F} \cdot \mathbf{T}$):**
+    *   🔴 **Red**: Tailwind (Positive Work). The field helps you.
+    *   🔵 **Blue**: Headwind (Negative Work). The field opposes you.
+    """)
     
